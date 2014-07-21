@@ -5,6 +5,11 @@ A very lite frontend for the barkingowl document scraping system.
 
 Getting started is easy!
 
+First, to use barkingowl you need to install RabbitMQ.  You can find information about installing RabbitMQ on your
+system here: [http://www.rabbitmq.com/download.html](http://www.rabbitmq.com/download.html)
+
+Next, execute these commands to launch the server:
+
     $ virtualenv barkingowl-frontend-venv
     $ source barkingowl-frontend-venv/bin/activate
     $ git clone https://github.com/thequbit/barkingowl-frontend
