@@ -1,0 +1,114 @@
+
+body {
+    font-family: sans-serif;
+}
+
+span {
+    padding-right: 50px;
+}
+
+/* site containers */
+
+div.site-container {
+    /*margin: auto;*/
+    width: 100%;
+    background: #202020;
+    /*border: solid 1px #444444;*/
+    /*border-radius: 8px;*
+    /*margin-top: 20px;*/
+    height: 100%;
+    overflow: hidden;
+    min-width: 1024px;
+}
+
+div.site-logo {
+    color: FFFFFF;
+    background-color: #202020;
+    padding: 10px 10px 10px 10px;
+    font-size: 250%;
+    padding-left: 15px;
+    width: 100%;
+}
+
+div.menu-outer {
+    width: 20%;
+    /*min-width: 250px;*/
+    background-color: #202020;
+    border-right: solid 1px 800000;
+    /*padding: 10px 10px 10px 10px;*/
+    height: 100%;
+    float: left;
+    
+}
+
+div.menu-inner {
+    padding: 10px 10px 10px 10px;
+    width: 100%;
+    /*background-color: FFFFFF;*/
+}
+
+div.page-outer {
+    margin-top: 8px;
+    padding-left: 25px;
+    padding-top: 5px;
+    float: left;
+    border-radius: 8px;
+    border: 1px solid #202020   ;
+    background: #E0E0E0;
+    width: 75%;
+    height: 80%;
+}
+
+div.page-inner {
+}
+
+/* format containers */
+
+div.page-top {
+    background-color: #202020;
+    height: 100px;
+}
+
+/* pages */
+
+#home {
+    display: none;
+}
+
+#dispatch-urls {
+    display: none;
+}
+
+#manage-collections {
+    display: none;
+}
+
+#configuration {
+    display: none;
+}
+
+
+/* User Elements */
+
+div.button {
+    background-color: D0D0D0;
+    color: #000000;
+    text-align: center;
+    height: 30px;
+    width: 90%;
+    border: solid 1px FFFFFF;
+    border-radius: 8px;
+    padding-top: 3%;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* formatting */
+
+div.breaker {
+    height: 15px;
+}
+
+div.indent {
+    padding-left: 25px;
+}
