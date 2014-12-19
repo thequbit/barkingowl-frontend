@@ -1,117 +1,111 @@
 <html>
 <head>
+
     <title>BarkingOwl Frontend</title>
 
-    <style>
-
-        body {
-        }
-
-        div.site-container {
-            margin: auto;
-            width: 800px;
-            background: #F0F0F0;
-            border: solid 1px #444444;
-            border-radius: 8px;
-            margin-top: 20px;
-            padding: 16px 16px 16px 16px;
-        }
-
-        div.controls {
-            width: 100%;
-            height: 600px;
-        }
-
-        div.indent {
-            padding-left: 50px;
-        }
-
-    </style>
-
+    <link href="main.css" rel="stylesheet" type="text/css">
+    
 </head>
 <body>
 
     <div class="site-container">
 
-       <div class="controls">
+        <div class="site-logo">
+            barkingowl
+        </div>
 
-           <h3>URL Dispatch</h3>
+        <div class="menu-outer">
 
-           <div class="indent">
-               <b>Upload CSV file:</b>
-               </br>
-               <form id="upload_form" action="upload_csv" method="post" enctype="multipart/form-data">
-                   <input type="file" id="file" name="file" size="10"/>
-                   <input type="submit" value="Upload CSV">
-               </form>
-               </br>
-               <b>URL JSON:</b>
-               <textarea id="urls_json" type="text" rows="18" cols="90">URL JSON Goes Here.</textarea>
-               </br></br>
-               <button onclick="submit_urls();">Submit URLs</button>
-           </div>
+            <div class="menu-inner">
+                    
+                <div class="menu-items">
+                    
+                    <div class="button" onclick="switch_tab('home');">Home</div>
+                    <div class="breaker"></div>
+                    <div class="button" onclick="switch_tab('dispatch-urls');">Dispatch URLs</div>
+                    <!--
+                    <div class="breaker"></div>
+                    <div class="button" onclick="switch_tab('manage-collections');">Manage Collections</div>
+                    -->
+                    <div class="breaker"></div>
+                    <div class="button" onclick="switch_tab('configuration');">Configuration</div>
+                    
+                    
+                </div>
+                
+            </div>
 
-           </br>
-           <h3>System Control</h3>
+        </div>
+        
+        <div class="page-outer">
+        
+            <div id="home" class="page-inner">
+            
+                <h3>Welcome to barkingowl</h3>
 
-           <div class="indent">
-               <button onclick="shutdown_system();">Shutdown System</button>
-           </div>
+                <span>
+                    barkingowl is a tool for finding documents on websites.
+                </span>
+            
+            </div>
+        
+            <div id="dispatch-urls" class="page-inner">
+            
+                <h3>URL Dispatch</h3>
 
-       </div> 
+                <div class="indent">
+                    <span>
+                    This page allows you to upload a CSV file with a list of URLs to be dispatched to the 
+                    barkingowl scraper system.  The URLs will be sent to the dispatcher, and then dispatched
+                    to all of the scrapers that are listening on the message bus.  Follow the following steps
+                    to upload a CSV, ensure it is valid, and then submit the list of URLs to the dispatcher.
+                    </span>
+                </div>
+                
+                <div class="breaker"></div>
 
+                    <div class="indent">
+                    
+                        <b>1. Select a CSV File</b>
+                        <div class="breaker"></div>
+                        <form id="upload_form" action="upload_csv" method="post" enctype="multipart/form-data">
+                            <div class="indent"><input type="file" id="file" name="file" size="10"/></div>
+                            <div class="breaker"></div>
+                            <b>2. Verify the CSV File</b>
+                            <div class="breaker"></div>
+                            <div class="indent"><input type="submit" value="Verify CSV"></div>
+                        </form>
+                        <b>2b. Check JSON</b>
+                        <div class="breaker"></div>
+                        <div class="indent"><textarea id="urls_json" type="text" rows="10" cols="70"></textarea></div>
+                        <div class="breaker"></div>
+                        <b>3. Submit URLs for Dispatch</b>
+                        <div class="breaker"></div>
+                        <div class="indent"><button onclick="submit_urls();">Submit URLs</button></div>
+                        
+                    </div>
+            
+            </div>
+            
+            <div id="configuration" class="page-inner">
+            
+                <h3>System Control</h3>
+
+                <div class="indent">
+                   <button onclick="shutdown_system();">Shutdown System</button>
+                </div>
+        
+            </div>
+        
+        </div>
+        
     </div>
 
     <script src="jquery-1.11.1.js"></script>
     <script src="jquery.form.js"></script>
     <script src="jquery.csv-0.71.js"></script>
+    <script src="page.js"></script>
     <script>
-
-        $(document).ready(function() { 
-            // bind 'myForm' and provide a simple callback function 
-            $('#upload_form').ajaxForm(function( response ) { 
-
-                $('#status_label').html( "Please wait ..." )
-
-                var data = $.csv.toObjects( response );
-
-                var json_data = JSON.stringify( data );
-
-                $('#urls_json').val( json_data );
-
-                $('#status_label').html( "" )                
-
-            }); 
-        });
-
-        function upload_csv() {
-            var filename = $("#file").val();
-            $.ajax({
-                type: "POST",
-                url: "upload_csv",
-                enctype: 'multipart/form-data',
-                data: {
-                    file: filename
-                },
-                success: function( response ) {
-                    //alert("Data Uploaded: " + response);
-                    $('urls_json').val( response );
-                }
-            });
-        }
-
-        function submit_urls() {
-            urls = encodeURIComponent( $('#urls_json').val() );
-            $.getJSON('set_urls.json?urls=' + urls, function( data ) {
-                // todo: report success/failure
-            });
-        }
-
-        function shutdown_system() {
-            $.getJSON('shutdown_system.json', function( data ) {
-                // todo: report success/failure
-            });
-        }
 
     </script>
 
