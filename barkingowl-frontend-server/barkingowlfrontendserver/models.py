@@ -1,3 +1,5 @@
+from sqlalchemy import update, desc, func
+
 from sqlalchemy import (
     Column,
     Index,
@@ -18,6 +20,12 @@ from sqlalchemy.orm import (
 )
 
 from zope.sqlalchemy import ZopeTransactionExtension
+
+import transaction
+
+import datetime
+import uuid
+import hashlib
 
 DBSession = scoped_session(
     sessionmaker(
@@ -53,7 +61,7 @@ class Users(Base):
         passsalt = str(uuid.uuid4())
         passhash = hashlib.sha256('{0}{1}'.format(
             password,
-            pass_salt
+            passsalt
         )).hexdigest()
 
         with transaction.manager:
@@ -125,7 +133,7 @@ class TargetURLs(Base):
                 title = title,
                 description = description,
                 url = url,
-                disabled = disabled,
+                disabled = False,
                 creation_datetime = datetime.datetime.now(),
             )
             session.add(target_url)
@@ -150,7 +158,13 @@ class TargetURLs(Base):
 
         with transaction.manager:
             target_urls = session.query(
-                TargetURLs,
+                TargetURLs.id,
+                TargetURLs.owner_id,
+                TargetURLs.title,
+                TargetURLs.description,
+                TargetURLs.url,
+                TargetURLs.disabled,
+                TargetURLs.creation_datetime,
             ).filter(
                 TargetURLs.owner_id == owner_id,
             ).all()
@@ -196,77 +210,131 @@ class DocumentTypes(Base):
             ).all()
         return document_types
 
-class ScrapingJobAssignments(Base):
+class ScraperJobAssignments(Base):
 
-    __tablename__ = 'scrapingjobassignments'
+    __tablename__ = 'scraperjobassignments'
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users.id'))
-    scraping_job_is = Column(Integer, ForeignKey('scrapingjobs.id'))
+    scraper_job_is = Column(Integer, ForeignKey('scraperjobs.id'))
     
     @classmethod
-    def make_assignment(cls, session, user_id, scraping_job_id):
+    def make_assignment(cls, session, user_id, scraper_job_id):
         with transaction.manager:
-            assignment = ScrapingJobAssignments(
+            assignment = ScraperJobAssignments(
                 user_id = user_id,
-                scraping_job_id = scraping_job_id,
+                scraper_job_id = scraper_job_id,
             )
         return assignment
 
     @classmethod
-    def get_assignment(cls, session, user_id, scraping_job_id):
+    def get_assignment(cls, session, user_id, scraper_job_id):
         with transaction.manager:
             assignment = session.query(
-                ScrapingJobAssignments,
+                ScraperJobAssignments,
             ).filter(
-                ScrapingJobAssignments.user_id == user_id,
-                ScrapingJobAssignments.scraping_job_id,
+                ScraperJobAssignments.user_id == user_id,
+                ScraperJobAssignments.scraper_job_id,
             ).first()
         return assignment
+
+class ScraperStatuses(Base):
+
+    __tablename__ = 'scraperstatuses'
+    id = Column(Integer, primary_key=True)
+    scraper_id = Column(Integer, ForeignKey('scrapers.id'))
+    status = Column(Text)
+    current_scraper_run_id = Column(Integer, ForeignKey('scraperruns.id'), \
+        nullable=True)
+    creation_datetime = Column(DateTime)
+
+    @classmethod
+    def add_scraper_status(cls, session, scraper_id):
+    
+        """ adds a scraper status to the database """
+
+        with transaction.manager:
+            status = ScraperStatuses(
+                scraper_id = scraper_id,
+                status = status,
+                current_scraper_run_id = current_scraper_run_id,
+                creation_datetime = datetime.datetime.now(),
+            )
+            session.add(status)
+            transaction.commit()
+        return status
+
+    @classmethod
+    def get_scraper_statuses(cls, session, scraper_id, start, count):
+    
+        """ gets the statuses for a scraper """
+
+        with transaction.manager:
+            statuses = session.query(
+                ScraperStatuses,
+            ).filter(
+                ScraperStatuses.scraper_id == scraper_id,
+            ).all()
+        return statuses
 
 class Scrapers(Base):
 
     __tablename__ = 'scrapers'
     id = Column(Integer, primary_key=True)
     unique = Column(Text)
-    status = Column(Text)
-    current_scraper_run_id = Column(Integer, ForeignKey('scraperruns.id'), \
-        nullable=True)
-    checkin_datetime = Column(DateTime)
+    label = Column(Text)
+    url_count = Column(Integer)
     creation_datetime = Column(DateTime)
 
     @classmethod
-    def add_scraper(cls, session, unique, status):
+    def add_scraper(cls, session, unique, label):
 
         """ add a scraper """
 
         with transaction.manager:
             scraper = Scrapers(
-                unique,
-                status,
-                current_scraper_run_id = None,
-                checkin_datetime = datetime.datetime.now(),
-                creation_datetime = datetime.datetime.no(),
+                unique = unique,
+                label = label,
+                url_count = 0,
+                creation_datetime = datetime.datetime.now(),
             )
             session.add(scraper)
             transaction.commit()
         return scraper
 
     @classmethod
-    def set_scraper_run_id(cls, session, scraper_run_id):
+    def increment_url_count(cls, session, scraper_id):
     
-        """ sets the scraper run the scraper is working on """
+        """ Increases the number of urls scraped by one"""
 
         with transaction.manager:
             scraper = session.query(
-                # TODO: finish this
-            )
+                Scrapers,
+            ).filter(
+                Scrapers.scraper_id == scraper_id,
+            ).first()
+            scraper.url_count += 1
+            session.add(scraper)
+            transaction.commit()
+        return scraper
+
+    @classmethod
+    def get_by_unique(cls, session, unique):
+    
+        """ gets a scraper by its unique id """
+
+        with transaction.manager:
+            scraper = session.query(
+                Scrapers,
+            ).filter(
+                Scrapers.unique == unique,
+            ).first()
         return scraper
 
 class ScraperRuns(Base):
 
     __tablename__ = 'scraperruns'
     id = Column(Integer, primary_key=True)
-    scraping_job_id = Column(Integer, ForeignKey('scrapingjobs.id'))
+    scraper_job_id = Column(Integer, ForeignKey('scraperjobs.id'))
     #scraper_unique = Column(Text)
     scraper_id = Column(Integer, ForeignKey('scrapers.id'))
     successful = Column(Boolean)
@@ -283,7 +351,7 @@ class ScraperRuns(Base):
     end_datetime = Column(DateTime)
     
     @classmethod
-    def add_run(cls, session, scraper_unique, scraping_job_id, successful, \
+    def add_run(cls, session, scraper_unique, scraper_job_id, successful, \
             bad_link_count, processed_link_count, bandwidth, ignored_count, \
             processed_links_json, bad_links_json, start_datetime, \
             end_datetime):
@@ -292,11 +360,11 @@ class ScraperRuns(Base):
 
         with transaction.manager:
             run = ScraperRuns(
-                scraping_job_id = scraping_job_id,
+                scraper_job_id = scraper_job_id,
                 scraper_unique = scraper_unique,
                 successful = successful,
                 bad_link_count = bad_link_count,
-                processed_link_count,
+                processed_link_count = processed_link_count,
                 bandwidth = bandwidth,
                 ignored_count = ignored_count,
                 #processed_links_json = processed_links_json,
@@ -309,69 +377,120 @@ class ScraperRuns(Base):
         return run
         
     @classmethod
-    def get_runs_for_scraping_job(cls, session, scraping_job_id, start, count):
+    def get_runs_for_scraper_job(cls, session, scraper_job_id, start, count):
     
-        """ get the runs for a scraping job """
+        """ get the runs for a scraper job """
 
         with transaction.manager:
             runs = session.query(
                 ScraperRuns,
             ).filter(
-                ScraperRuns.scraping_job_id == scraping_job_id,
+                ScraperRuns.scraper_job_id == scraper_job_id,
             ).all()
         return runs
 
-class ScrapingJobs(Base):
+class ScraperJobs(Base):
 
-    __tablename__ = 'scrapingjobs'
+    __tablename__ = 'scraperjobs'
     id = Column(Integer, primary_key=True)
-    author_id = Column(Integer, ForeignKey('users.id'))
+    owner_id = Column(Integer, ForeignKey('users.id'))
     target_url_id = Column(Integer, ForeignKey('targeturls.id'))
     name = Column(Text)
     notes = Column(Text)
     frequency = Column(Integer) # in hours
     link_level = Column(Integer) # 0 = exhostive
-    document_type_id = Column(Integer, ForeignKey('documenttypes.id')
+    document_type_id = Column(Integer, ForeignKey('documenttypes.id'))
     enabled = Column(Boolean)
+    last_run_datetime = Column(DateTime)
     creation_datetime = Column(DateTime)
 
     @classmethod
-    def create_scraping_job(cls, session, author_id, target_url_id, name, \
-            notes, frequency, link_level, document_type_id):
+    def create_scraper_job(cls, session, owner_id, target_url_id, name, \
+            notes, frequency, link_level, document_type_id, enabled=False):
+
+        """ creates a new scraper job in the database """
 
         with transaction.manager:
-            scraping_job = ScrapingJobs(
-                author_id = author_id,
+            scraper_job = ScraperJobs(
+                owner_id = owner_id,
                 target_url_id = target_url_id,
                 name = name,
                 notes = notes,
                 frequency = frequency,
                 link_level = link_level,
                 document_type_id = document_type_id,
-                enabled = False,
+                enabled = enabled,
+                # set this to a long time ago
+                last_run_datetime = datetime.datetime.now() - \
+                    datetime.timedelta(days=365),
                 creation_datetime = datetime.datetime.now(),
             )
-            session.add(scraping_job)
+            session.add(scraper_job)
             transaction.commit()
-        return scraping_job
+        return scraper_job
 
     @classmethod
-    def get_users_scraping_jobs(cls, session, user_id):
+    def get_scraper_jobs(cls, session, owner_id):
         with transaction.manager:
             jobs = session.query(
-                ScrapingJobs,
+                ScraperJobs.id,
+                ScraperJobs.owner_id,
+                ScraperJobs.target_url_id,
+                ScraperJobs.name,
+                ScraperJobs.notes,
+                ScraperJobs.frequency,
+                ScraperJobs.link_level,
+                ScraperJobs.document_type_id,
+                ScraperJobs.enabled,
+                ScraperJobs.last_run_datetime,
+                ScraperJobs.creation_datetime,
+                TargetURLs.title,
+                TargetURLs.description,
+                TargetURLs.url,
+                TargetURLs.disabled,
+                DocumentTypes.name,
+                DocumentTypes.description,
+                DocumentTypes.doc_type,
+            ).join(
+                TargetURLs, TargetURLs.id == ScraperJobs.target_url_id,
+            ).outerjoin(
+                DocumentTypes, DocumentTypes.id == \
+                    ScraperJobs.document_type_id,
             ).filter(
-                author_id == user_id,
+                owner_id == owner_id,
             ).all()
-        return
+        return jobs
 
     @classmethod
-    def get_one_unrun_job(cls, session):
+    def get_next_job(cls, session):
+
+        """ gets a job that needs to be run """
+
         with transaction.manager:
             job = session.query(
-                ScrapingJobs,
+                ScraperJobs.id,
+                ScraperJobs.owner_id,
+                ScraperJobs.target_url_id,
+                ScraperJobs.name,
+                ScraperJobs.notes,
+                ScraperJobs.frequency,
+                ScraperJobs.link_level,
+                ScraperJobs.document_type_id,
+                ScraperJobs.enabled,
+                ScraperJobs.last_run_datetime,
+                ScraperJobs.creation_datetime,
+                TargetURLs.title,
+                TargetURLs.description,
+                TargetURLs.url,
+                TargetURLs.disabled,
+                DocumentTypes.name,
+                DocumentTypes.description,
+                DocumentTypes.doc_type,
             ).filter(
-                ScrapingJobs.
+                ScraperJobs.last_run_datetime <= 
+                    datetime.datetime.now() + datetime.timedelta(days=1),
+            ).join(
+                TargetURLs, TargetURLs.id == ScraperJobs.target_url_id,
             ).first()
         return job
 
@@ -381,7 +500,7 @@ class Documents(Base):
     id = Column(Integer, primary_key=True)
     target_url_id = Column(Integer, ForeignKey('targeturls.id'))
     scraper_run_id = Column(Integer, ForeignKey('scraperruns.id'))
-    scraping_job_id = Column(Integer, ForeignKey('scrapingjobs.id'))
+    scraper_job_id = Column(Integer, ForeignKey('scraperjobs.id'))
     
     label = Column(Text)
     description = Column(Text)
@@ -400,7 +519,7 @@ class Documents(Base):
 
     @classmethod
     def add_document(cls, session, target_url_id, scraper_run_id, \
-            scraping_job_id, label, description, url, unique, filename, \
+            scraper_job_id, label, description, url, unique, filename, \
             link_text, page_url, page_title, size, download_datetime):
 
         """ Adds a document """
@@ -409,7 +528,7 @@ class Documents(Base):
             document = Documents(
                 target_url_id = target_url_id,
                 scraper_run_id = scraper_run_id,
-                scraping_job_id = scraping_job_id,
+                scraper_job_id = scraper_job_id,
                 label = label,
                 description = descritpion,
                 url = url,
@@ -430,19 +549,40 @@ class Documents(Base):
     def get_documents_by_owner_id(cls, session, owner_id):
 
         """ Get all documents for the user that is assigned to
-            the scraping job """
+            the scraper job """
 
         with transaction.manager:
             documents = session.query(
                 Documents,
             ).join(
-                ScrapingJobAssignments,
-                    ScrapingJobAssignments.scraping_job_id == \
-                        Documents.scraping_job_id,
+                ScraperJobAssignments,
+                    ScraperJobAssignments.scraper_job_id == \
+                        Documents.scraper_job_id,
             ).filter(
-                ScrapingJobAssignments.user_id == owner_id,
+                ScraperJobAssignments.user_id == owner_id,
             ).all()
         return documents
+
+class DocumentContents(Base):
+
+    __tablename__ = 'documentcontents'
+    id = Column(Integer, primary_key=True)
+    document_id = Column(Integer, ForeignKey('documents.id'))
+    text = Column(Text)
+    creation_datetime = Column(DateTime)
+
+    @classmethod
+    def create_document_contents(cls, session, document_id, text):
+
+        """  Creates an entry with the document text in it """
+
+        with transaction.manager:
+            document_text = DocumentContents(
+                document_id = document_id,
+                text = text,
+                creation_datetime = datetime.datetime.now(),
+            )
+        return document_text
 
 class DocumentNotes(Base):
 
