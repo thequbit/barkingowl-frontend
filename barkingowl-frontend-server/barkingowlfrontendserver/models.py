@@ -111,9 +111,51 @@ class TargetURLs(Base):
     title = Column(Text)
     description = Column(Text)
     url = Column(Text)
-    #frequency = Column(Integer) # in hours
-    #link_level = Column(Integer) # 0 = exhostive
+    disabled = Column(Boolean)
     creation_datetime = Column(DateTime)
+
+    @classmethod
+    def add_target_url(cls, session, owner_id, title, description, url):
+
+        """ Adds a new target url """
+
+        with transaction.manager:
+            target_url = TargetURLs(
+                owner_id = owner_id,
+                title = title,
+                description = description,
+                url = url,
+                disabled = disabled,
+                creation_datetime = datetime.datetime.now(),
+            )
+            session.add(target_url)
+            transaction.commit()
+        return target_url
+
+    @classmethod
+    def get_all_target_urls(cls, session):
+    
+        """ Returns all target urls in the database """
+
+        with transaction.manager:
+            target_urls = session.query(
+                TargetURLs,
+            ).all()
+        return target_urls
+
+    @classmethod
+    def get_all_by_owner_id(cls, session, owner_id):
+    
+        """ Returns all target urls by owner id """
+
+        with transaction.manager:
+            target_urls = session.query(
+                TargetURLs,
+            ).filter(
+                TargetURLs.owner_id == owner_id,
+            ).all()
+        return target_urls
+
 
 class DocumentTypes(Base):
 
@@ -181,12 +223,52 @@ class ScrapingJobAssignments(Base):
             ).first()
         return assignment
 
+class Scrapers(Base):
+
+    __tablename__ = 'scrapers'
+    id = Column(Integer, primary_key=True)
+    unique = Column(Text)
+    status = Column(Text)
+    current_scraper_run_id = Column(Integer, ForeignKey('scraperruns.id'), \
+        nullable=True)
+    checkin_datetime = Column(DateTime)
+    creation_datetime = Column(DateTime)
+
+    @classmethod
+    def add_scraper(cls, session, unique, status):
+
+        """ add a scraper """
+
+        with transaction.manager:
+            scraper = Scrapers(
+                unique,
+                status,
+                current_scraper_run_id = None,
+                checkin_datetime = datetime.datetime.now(),
+                creation_datetime = datetime.datetime.no(),
+            )
+            session.add(scraper)
+            transaction.commit()
+        return scraper
+
+    @classmethod
+    def set_scraper_run_id(cls, session, scraper_run_id):
+    
+        """ sets the scraper run the scraper is working on """
+
+        with transaction.manager:
+            scraper = session.query(
+                # TODO: finish this
+            )
+        return scraper
+
 class ScraperRuns(Base):
 
     __tablename__ = 'scraperruns'
     id = Column(Integer, primary_key=True)
     scraping_job_id = Column(Integer, ForeignKey('scrapingjobs.id'))
-    scraper_unique = Column(Text)
+    #scraper_unique = Column(Text)
+    scraper_id = Column(Integer, ForeignKey('scrapers.id'))
     successful = Column(Boolean)
     bad_link_count = Column(Integer)
     processed_link_count = Column(Integer)
@@ -292,3 +374,112 @@ class ScrapingJobs(Base):
                 ScrapingJobs.
             ).first()
         return job
+
+class Documents(Base):
+
+    __tablename__ = 'documents'
+    id = Column(Integer, primary_key=True)
+    target_url_id = Column(Integer, ForeignKey('targeturls.id'))
+    scraper_run_id = Column(Integer, ForeignKey('scraperruns.id'))
+    scraping_job_id = Column(Integer, ForeignKey('scrapingjobs.id'))
+    
+    label = Column(Text)
+    description = Column(Text)
+
+    # these are the things we get back from BarkingOwl
+    url = Column(Text)
+    unique = Column(Text)
+    filename = Column(Text)
+    link_text = Column(Text)
+    page_url = Column(Text)
+    page_title = Column(Text)
+    size = Column(Text)
+    
+    download_datetime = Column(Text)
+    creation_datetime = Column(Text)    
+
+    @classmethod
+    def add_document(cls, session, target_url_id, scraper_run_id, \
+            scraping_job_id, label, description, url, unique, filename, \
+            link_text, page_url, page_title, size, download_datetime):
+
+        """ Adds a document """
+
+        with transaction.manager:
+            document = Documents(
+                target_url_id = target_url_id,
+                scraper_run_id = scraper_run_id,
+                scraping_job_id = scraping_job_id,
+                label = label,
+                description = descritpion,
+                url = url,
+                unique = unique,
+                filename = filename,
+                link_text = link_text,
+                page_url = page_url,
+                page_title = page_title,
+                size = size,
+                download_datetime = download_datetime,
+                creation_datetime = datetime.datetime.now(),
+            )
+            session.add(document)
+            transaction.commit()
+        return document
+
+    @classmethod
+    def get_documents_by_owner_id(cls, session, owner_id):
+
+        """ Get all documents for the user that is assigned to
+            the scraping job """
+
+        with transaction.manager:
+            documents = session.query(
+                Documents,
+            ).join(
+                ScrapingJobAssignments,
+                    ScrapingJobAssignments.scraping_job_id == \
+                        Documents.scraping_job_id,
+            ).filter(
+                ScrapingJobAssignments.user_id == owner_id,
+            ).all()
+        return documents
+
+class DocumentNotes(Base):
+
+    __tablename__ = 'documentnotes'
+    id = Column(Integer, primary_key=True)
+    document_id = Column(Integer, ForeignKey('documents.id'))
+    author_id = Column(Integer, ForeignKey('users.id'))
+    contents = Column(Text)
+    edited = Column(Boolean)
+    edited_datetime = Column(DateTime, nullable=True)
+    creation_datetime = Column(DateTime)
+
+    @classmethod
+    def create_document_note(cls, session, document_id, author_id, contents):
+
+        """ create a document note """
+
+        with transaction.manager:
+            document_note = DocumentNotes(
+                document_id = document_id,
+                author_id = author_id,
+                contents = contents,
+            )
+            session.add(document_note)
+            transaction.commit()
+        return document_note
+
+    @classmethod
+    def get_document_notes_by_document_id(cls, session, document_id):
+    
+        """ get all notes for a document """
+
+        with transaction.manager:
+            document_notes = session.query(
+                DocumentNotes,
+            ).filter(
+                DocumentNotes.id == document_id,
+            ).all()
+        return document_notes
+
