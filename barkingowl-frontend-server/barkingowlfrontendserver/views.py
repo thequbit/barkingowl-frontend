@@ -284,14 +284,14 @@ def web_add_scraper(request):
 
         unique = None
         try:
-            unique = request.POST['unique']
+            unique = request.GET['unique']
         except:
             raise Exception('Invalid/Missing unique field within POST')
 
         if unique == None or unique.strip() == '':
             raise Exception('Invalid unique value: must not be blank')
 
-        _scraper = Scrapers.get_by_unique(
+        _scraper = Scrapers.get_from_unique(
             session = DBSession,
             unique = unique,
         )
@@ -324,7 +324,8 @@ def web_get_scraper_job(request):
     """ this returns a single scraper job (URL) for scraping """
 
     result = {'success': False}
-    try:
+    if True:
+    #try:
 
         unique = None
         try:
@@ -335,46 +336,137 @@ def web_get_scraper_job(request):
         if unique == None or unique.strip() == '':
             raise Exception('Invalid unique value: must not be blank') 
 
+        scraper = Scrapers.get_from_unique(
+            session = DBSession,
+            unique = unique,
+        )
+
+        if scraper == None:
+            raise Exception("Unregistered scraper.")
+
         _job = ScraperJobs.get_next_job(
             session = DBSession,
         )
 
-        print "\n\n"
-        print _job
-        print "\n\n"
+        job = None
+        scraper_run_id = None
+        status_id = None
+        if _job != None:
 
-        s_id, s_author_id, s_target_url_id, s_name, s_notes, s_frequency, \
-            s_link_level, s_document_type_id, s_enabled, \
-            s_last_run_datetime, s_creation_datetime, t_title, \
-            t_description, t_url, t_disabled, d_name, d_description, \
-            d_doc_type = _job
+            s_id, s_author_id, s_target_url_id, s_name, s_notes, s_frequency, \
+                s_link_level, s_document_type_id, s_enabled, \
+                s_last_run_datetime, s_creation_datetime, t_title, \
+                t_description, t_url, t_disabled, d_name, d_description, \
+                d_doc_type = _job
 
-        job = {
-            'id': s_id,
-            'author_id': s_author_id,
-            'target_url_id': s_target_url_id,
-            'name': s_name,
-            'notes': s_notes,
-            #'frequency': s_frequency,
-            'link_level': s_link_level,
-            'document_type_id': s_document_type_id,
-            'enabled': s_enabled,
-            'last_run_datetime': str(s_last_run_datetime),
-            'creation_datetime': str(s_creation_datetime),
-            'target_url': {
-                'title': t_title,
-                'description': t_description,
-                'url': t_url,
-                'disabled': t_disabled,
-            },
-            'document_type': {
-                'name': d_name,
-                'description': d_description,
-                'doc_type': d_doc_type,
-            },
-        }
+            job = {
+                'id': s_id,
+                'author_id': s_author_id,
+                'target_url_id': s_target_url_id,
+                'name': s_name,
+                'notes': s_notes,
+                #'frequency': s_frequency,
+                'link_level': s_link_level,
+                'document_type_id': s_document_type_id,
+                'enabled': s_enabled,
+                'last_run_datetime': str(s_last_run_datetime),
+                'creation_datetime': str(s_creation_datetime),
+                'target_url': {
+                    'title': t_title,
+                    'description': t_description,
+                    'url': t_url,
+                    'disabled': t_disabled,
+                },
+                'document_type': {
+                    'name': d_name,
+                    'description': d_description,
+                    'doc_type': d_doc_type,
+                },
+            }
+
+            scraper_run = ScraperRuns.create_run(
+                session = DBSession,
+                scraper_id = scraper.id,
+                scraper_job_id = s_id,
+            )
+
+            scraper_run_id = scraper_run.id
+
+            status = ScraperStatuses.add_scraper_status(
+                session = DBSession,
+                scraper_id = scraper.id,
+                status = "Job Dispatched",
+                current_scraper_run_id = None, # run is not complete
+            )
+
+            status_id = status.id
 
         result['job'] = job
+
+        result['scraper_run_id'] = scraper_run_id
+
+        result['status_id'] = status_id
+
+        result['success'] = True
+
+    #except Exception, e:
+    #    result['error_text'] = str(e)
+    #    pass
+
+    return make_response(result)
+
+@view_config(route_name='/add_document.json')
+def web_add_document(request):
+
+    """ Add a document to the database """
+
+    result = {'success': False}
+    try:
+
+        unique = None
+        try:
+            unique = request.POST['unique']
+            target_url_id = request.POST['target_url_id']
+            scraper_run_id = request.POST['scraper_run_id']
+            scraper_job_id = request.POST['scraper_job_id']
+            url = request.POST['url']
+            filename = request.POST['filename']
+            link_text = request.POST['link_text']
+            #page_url = request.POST['page_url']
+            #page_title = request.POST['page_title']
+            #size = request.POST['size']
+        except:
+            raise Exception('Invalid/Missing unique field within POST')
+
+        if unique == None or unique.strip() == '':
+            raise Exception('Invalid unique value: must not be blank')
+
+        _scraper = Scrapers.get_from_unique(
+            session = DBSession,
+            unique = unique,
+        )
+
+        if _scraper != None:
+            raise Exception('Unregistered scraper.')
+
+        document = Documents.add_document(
+            session = DBSession,
+            target_url_id = target_url_id,
+            scraper_run_id = scraper_run_id,
+            scraper_job_id = scraper_job_id,
+            label = '',
+            description = '',
+            url = url,
+            unqiue_name = '',
+            filename = '',
+            link_text = link_text,
+            page_url = '',
+            page_title = '',
+            size = -1,
+            download_datetime = None,
+        ) 
+
+        result['document_id'] = document.id
 
         result['success'] = True
 
@@ -383,3 +475,4 @@ def web_get_scraper_job(request):
        pass
 
     return make_response(result)
+

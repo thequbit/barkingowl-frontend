@@ -10,11 +10,24 @@ class FrontEndScraper(object):
 
     def __init__(self):
  
+        self.registerurl = "http://localhost:6548/register_scraper.json"
         self.jobsurl = "http://localhost:6548/get_scraper_job.json"
         
         self.uid = str(uuid.uuid4())
 
         self.scraper = Scraper(uid=self.uid)
+
+    def register(self):
+
+        url = '{0}?unique={1}'.format(self.registerurl,self.uid)
+
+        http_response = requests.get(url).text
+        response = json.loads(http_response) 
+
+        print response
+
+        if response['success'] == False:
+            raise Exception("Error while registering scraper.")
 
     def check_for_job(self):
 
@@ -79,6 +92,9 @@ class FrontEndScraper(object):
         # reset the scraper to it is ready to accept our job
         self.scraper.reset()
 
+        # configure document reporting callback
+        self.scraper.set_broadcast_document_callback( self.report_document )
+
         # set the payload
         self.scraper.set_url_data( url_data )
 
@@ -93,8 +109,13 @@ class FrontEndScraper(object):
 
         print "Done with job."
 
+    def report_document(self, payload):
+
+        print payload
+
     def start(self):
 
+        self.register()
 
         while(1):
 

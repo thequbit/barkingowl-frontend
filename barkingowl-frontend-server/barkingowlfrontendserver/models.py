@@ -248,7 +248,8 @@ class ScraperStatuses(Base):
     creation_datetime = Column(DateTime)
 
     @classmethod
-    def add_scraper_status(cls, session, scraper_id):
+    def add_scraper_status(cls, session, scraper_id, status, \
+            current_scraper_run_id=None):
     
         """ adds a scraper status to the database """
 
@@ -318,7 +319,7 @@ class Scrapers(Base):
         return scraper
 
     @classmethod
-    def get_by_unique(cls, session, unique):
+    def get_from_unique(cls, session, unique):
     
         """ gets a scraper by its unique id """
 
@@ -335,47 +336,72 @@ class ScraperRuns(Base):
     __tablename__ = 'scraperruns'
     id = Column(Integer, primary_key=True)
     scraper_job_id = Column(Integer, ForeignKey('scraperjobs.id'))
-    #scraper_unique = Column(Text)
     scraper_id = Column(Integer, ForeignKey('scrapers.id'))
+    finished = Column(Boolean)
     successful = Column(Boolean)
     bad_link_count = Column(Integer)
     processed_link_count = Column(Integer)
     bandwidth = Column(Integer)
     ignored_count = Column(Integer)
-    
+    document_count = Column(Integer)    
+
     # these may not want to be popualted, as they could be MASSIVE
     #processed_links_json = Column(Text)
     #bad_links_json = Column(Text)
-    
+    #documents_json = Column(Text)    
+
     start_datetime = Column(DateTime)
-    end_datetime = Column(DateTime)
-    
+    end_datetime = Column(DateTime, nullable=True)
+   
     @classmethod
-    def add_run(cls, session, scraper_unique, scraper_job_id, successful, \
-            bad_link_count, processed_link_count, bandwidth, ignored_count, \
-            processed_links_json, bad_links_json, start_datetime, \
-            end_datetime):
-        
-        """ Add a run to the log """
+    def create_run(cls, session, scraper_id, scraper_job_id):
+
+        """ Create a scraper run """
 
         with transaction.manager:
             run = ScraperRuns(
+                scraper_id = scraper_id,
                 scraper_job_id = scraper_job_id,
-                scraper_unique = scraper_unique,
-                successful = successful,
-                bad_link_count = bad_link_count,
-                processed_link_count = processed_link_count,
-                bandwidth = bandwidth,
-                ignored_count = ignored_count,
-                #processed_links_json = processed_links_json,
-                #bad_links_json = bad_links_json,
-                start_datetime = start_datetime,
-                end_datetime = end_datetime,
+                finished = False,
+                successful = False,
+                bad_link_count = -1,
+                processed_link_count = -1,
+                bandwidth = -1,
+                ignored_count = -1,
+                document_count = -1,
+                start_datetime = datetime.datetime.now(),
+                end_datetime = None,
             )
             session.add(run)
             transaction.commit()
         return run
-        
+ 
+    @classmethod
+    def update_run(cls, session, scraper_run_id, finished, successful, \
+            bad_link_count, processed_link_count, bandwidth, ignored_count, \
+            document_count, end_datetime):
+
+        """ Updates the contents of a scraper run """
+
+        with transaction.manager:
+            scraper_run = session.query(
+                ScraperRuns,
+            ).filter(
+                ScraperRuns.id == scraper_run_id,
+            ).first()
+            scraper_run.finished = finished
+            scraper_run.successful = successful
+            scraper_run.bad_link_count = bad_link_count
+            scraper_run.processed_link_count = processed_link_count
+            scraper_run.bandwidth = bandwidth
+            scraper_run.ignored_count = ignored_count
+            scraper_run.document_count = document_count
+            scraper_run.end_datetime = end_datetime
+            session.add(scraper_run)
+            transaction.commit()
+
+        return scraper_run
+
     @classmethod
     def get_runs_for_scraper_job(cls, session, scraper_job_id, start, count):
     
@@ -488,10 +514,20 @@ class ScraperJobs(Base):
                 DocumentTypes.doc_type,
             ).filter(
                 ScraperJobs.last_run_datetime <= 
-                    datetime.datetime.now() + datetime.timedelta(days=1),
+                    datetime.datetime.now() - datetime.timedelta(days=1),
             ).join(
                 TargetURLs, TargetURLs.id == ScraperJobs.target_url_id,
             ).first()
+        if job != None:
+            with transaction.manager:
+                _job = session.query(
+                    ScraperJobs,
+                ).filter(
+                    ScraperJobs.id == job.id,
+                ).first()
+                _job.last_run_datetime = datetime.datetime.now()
+                #session.add(_job)
+                #transaction.commit()
         return job
 
 class Documents(Base):
@@ -507,19 +543,19 @@ class Documents(Base):
 
     # these are the things we get back from BarkingOwl
     url = Column(Text)
-    unique = Column(Text)
+    unique_name = Column(Text, nullable=True)
     filename = Column(Text)
     link_text = Column(Text)
     page_url = Column(Text)
     page_title = Column(Text)
     size = Column(Text)
     
-    download_datetime = Column(Text)
-    creation_datetime = Column(Text)    
+    download_datetime = Column(Text, nullable=True)
+    creation_datetime = Column(Text)
 
     @classmethod
     def add_document(cls, session, target_url_id, scraper_run_id, \
-            scraper_job_id, label, description, url, unique, filename, \
+            scraper_job_id, label, description, url, unique_name, filename, \
             link_text, page_url, page_title, size, download_datetime):
 
         """ Adds a document """

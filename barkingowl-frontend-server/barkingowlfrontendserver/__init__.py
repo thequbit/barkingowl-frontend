@@ -32,5 +32,7 @@ def main(global_config, **settings):
     config.add_route('/register_scraper.json','/register_scraper.json')
     config.add_route('/get_scraper_job.json','/get_scraper_job.json')
 
+    config.add_route('/add_document.json', '/add_document.json')
+
     config.scan()
     return config.make_wsgi_app()
