@@ -179,7 +179,8 @@ def web_add_document_type(request):
 def web_create_scraper_job(request):
 
     result = {'success': False}
-    try:
+    if True:
+    #try:
 
         try:
             owner_id = request.POST['owner_id']
@@ -209,8 +210,8 @@ def web_create_scraper_job(request):
 
         result['success'] = True
 
-    except Exception, e:
-        result['error_text'] = str(e)
+    #except Exception, e:
+    #    result['error_text'] = str(e)
 
     return make_response(result)
 
@@ -473,6 +474,43 @@ def web_add_document(request):
     except Exception, e:
        result['error_text'] = str(e)
        pass
+
+    return make_response(result)
+
+@view_config(route_name='/get_documents.json')
+def web_get_documents(request):
+
+    result = {'success': False}
+    try:
+
+        try:
+            #owner_id = request.POST['owner_id']
+            scraper_job_id = request.GET['scraper_job_id']
+        except:
+            raise Exception('Invalid/Missing fields.')
+
+        _documents = Documents.get_by_scraper_job_id(
+            session = DBSession,
+            scraper_job_id = scraper_job_id,
+        )
+
+        documents = []
+        for d_id, d_scraper_run_id, d_scraper_job_id, d_label, d_description, \
+                d_url, d_unique_name, d_filename, d_link_text, d_page_url, \
+                d_page_title, d_size, d_download_datetime, \
+                d_creation_datetime in _documents:
+
+            documents.append({
+                'id': d_id,
+                'url': d_url,
+            })
+
+        result['documents'] = documents
+
+        result['success'] = True
+
+    except Exception, e:
+        result['error_text'] = str(e)
 
     return make_response(result)
 

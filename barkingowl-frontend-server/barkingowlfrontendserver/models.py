@@ -568,7 +568,7 @@ class Documents(Base):
                 label = label,
                 description = descritpion,
                 url = url,
-                unique = unique,
+                unique_name = unique_name,
                 filename = filename,
                 link_text = link_text,
                 page_url = page_url,
@@ -599,6 +599,31 @@ class Documents(Base):
             ).all()
         return documents
 
+    @classmethod
+    def get_by_scraper_job_id(cls, session, scraper_job_id):
+    
+        """ Gets all documents from a scraper job """    
+
+        with transaction.manager:
+            documents = session.query(
+                Documents.id,
+                Documents.scraper_run_id,
+                Documents.scraper_job_id,
+                Documents.label,
+                Documents.description,
+                Documents.url,
+                Documents.unique_name,
+                Documents.filename,
+                Documents.link_text,
+                Documents.page_url,
+                Documents.page_title,
+                Documents.size,
+                Documents.download_datetime,
+                Documents.creation_datetime,
+            ).filter(
+                Documents.scraper_job_id == scraper_job_id,
+            ).all()
+        return documents
 class DocumentContents(Base):
 
     __tablename__ = 'documentcontents'
