@@ -3,6 +3,8 @@
 
     <meta charset="utf-8" />
 
+    <link rel="stylesheet" href="static/css/site.css" />
+
     <link rel="stylesheet" href="static/foundation/css/foundation.css" />
     
     <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
