@@ -4,7 +4,7 @@ import uuid
 import time
 import json
 import requests
-
+import urlparse
 
 class FrontEndScraper(object):
 
@@ -12,7 +12,8 @@ class FrontEndScraper(object):
  
         self.registerurl = "http://localhost:6548/register_scraper.json"
         self.jobsurl = "http://localhost:6548/get_scraper_job.json"
-        
+        self.adddocumenturl = "http://localhost:6548/add_document.json"
+
         self.uid = str(uuid.uuid4())
 
         self.scraper = Scraper(uid=self.uid)
@@ -28,6 +29,8 @@ class FrontEndScraper(object):
 
         if response['success'] == False:
             raise Exception("Error while registering scraper.")
+
+        return response
 
     def check_for_job(self):
 
@@ -80,6 +83,9 @@ class FrontEndScraper(object):
 
         # create our url payload 
         url_data = {
+            'scraper_job_id': job['scraper_job_id'],
+            'scraper_run_id': job['scraper_run_id'],
+            'target_url_id': job['target_url_id'],
             'target_url': job['target_url']['url'],
             'max_link_level': -1, #job['link_level'],
             'doc_type': job['document_type']['doc_type'],
@@ -113,9 +119,52 @@ class FrontEndScraper(object):
 
         print payload
 
+        print "\n\nSubmitting Document with uuid: {0}\n\n".format(self.uid)
+
+        if True:
+        #try:
+
+            target_url_id = payload['message']['url_data']['target_url_id']
+            scraper_run_id = payload['message']['url_data']['scraper_run_id']
+            scraper_job_id = payload['message']['url_data']['scraper_job_id']
+            url = payload['message']['doc_url']
+            filename = urlparse.urlparse(url).path.split('/')[-1],
+            link_text =  payload['message']['link_text']
+            
+
+            data = {
+                'unique': self.uid,
+                'target_url_id': target_url_id,
+                'scraper_run_id': scraper_run_id,
+                'scraper_job_id': scraper_job_id,
+                'url': url,
+                'filename': filename,
+                'link_text': link_text,
+            }
+
+            http_response = requests.post(self.adddocumenturl, data=data).text
+            json_response = json.loads(http_response)
+
+            print "\n\nDocument Submitted!\n\n"
+            print json_response
+            print "\n\n"
+
+        #except:
+        #    pass
+
     def start(self):
 
-        self.register()
+        registered = False
+        while( not registered ):
+            try:
+                self.register()
+                registered = True
+                break
+            except:
+                pass
+            print "Registration failure, waiting 1 second to try again ..."
+            time.sleep(1)
+
 
         while(1):
 
@@ -123,6 +172,9 @@ class FrontEndScraper(object):
             if True:
             #try:
                 job = self.check_for_job()
+
+                print job
+
             #except:
             #    pass
 

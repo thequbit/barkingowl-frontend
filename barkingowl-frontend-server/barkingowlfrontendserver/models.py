@@ -566,7 +566,7 @@ class Documents(Base):
                 scraper_run_id = scraper_run_id,
                 scraper_job_id = scraper_job_id,
                 label = label,
-                description = descritpion,
+                description = description,
                 url = url,
                 unique_name = unique_name,
                 filename = filename,

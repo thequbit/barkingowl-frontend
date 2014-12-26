@@ -360,8 +360,14 @@ def web_get_scraper_job(request):
                 t_description, t_url, t_disabled, d_name, d_description, \
                 d_doc_type = _job
 
+            scraper_run = ScraperRuns.create_run(
+                session = DBSession,
+                scraper_id = scraper.id,
+                scraper_job_id = s_id,
+            )
+
             job = {
-                'id': s_id,
+                'scraper_job_id': s_id,
                 'author_id': s_author_id,
                 'target_url_id': s_target_url_id,
                 'name': s_name,
@@ -383,15 +389,16 @@ def web_get_scraper_job(request):
                     'description': d_description,
                     'doc_type': d_doc_type,
                 },
+                'scraper_run_id': scraper_run.id,
             }
 
-            scraper_run = ScraperRuns.create_run(
-                session = DBSession,
-                scraper_id = scraper.id,
-                scraper_job_id = s_id,
-            )
+            #scraper_run = ScraperRuns.create_run(
+            #    session = DBSession,
+            #    scraper_id = scraper.id,
+            #    scraper_job_id = s_id,
+            #)
 
-            scraper_run_id = scraper_run.id
+            #scraper_run_id = scraper_run.id
 
             status = ScraperStatuses.add_scraper_status(
                 session = DBSession,
@@ -404,7 +411,7 @@ def web_get_scraper_job(request):
 
         result['job'] = job
 
-        result['scraper_run_id'] = scraper_run_id
+        #result['scraper_run_id'] = scraper_run_id
 
         result['status_id'] = status_id
 
@@ -447,7 +454,7 @@ def web_add_document(request):
             unique = unique,
         )
 
-        if _scraper != None:
+        if _scraper == None:
             raise Exception('Unregistered scraper.')
 
         document = Documents.add_document(
@@ -458,7 +465,7 @@ def web_add_document(request):
             label = '',
             description = '',
             url = url,
-            unqiue_name = '',
+            unique_name = '',
             filename = '',
             link_text = link_text,
             page_url = '',
@@ -466,6 +473,10 @@ def web_add_document(request):
             size = -1,
             download_datetime = None,
         ) 
+
+        print "\n\n"
+        print document
+        print "\n\n"
 
         result['document_id'] = document.id
 
