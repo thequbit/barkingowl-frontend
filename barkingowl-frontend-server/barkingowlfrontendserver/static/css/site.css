@@ -1,12 +1,15 @@
 
-/*
- *
- *    Foundation Overrides
- *
- */
+body {
+    padding: 0px;
+    margin: 0px;
+    position: relative;
+    height: 100%;
+    font-family: "Lato",sans-serif !important;
+    color: #BBBBBB;
+}
 
-.row {
-	max-width: none !important;
+html {
+    height: 100%;
 }
 
 /*
@@ -16,9 +19,69 @@
  */
 
 .site-wrapper {
-	/*background: #D7D7D7;*/
+    /*margin-top: 10px;*/
+    /*background: #D7D7D7;*/
 }
 
-.site-contents {
-
+.page-wrapper {
+    border-left: 2px solid #999999;
+    overflow: hidden;
+    display: block;
+    height: 100%;
+    background-color: #222222;
 }
+
+.page-title {
+    padding: 50px;
+}
+
+.page-contents {
+    padding: 50px;
+}
+
+.nav-wrapper {
+    float: left;
+    width: 220px;
+    height: 100%;
+    background: #222222;
+}
+
+div.nav-info {
+    padding-top: 20px;
+    text-align: center;
+    font-size: 200%;
+    height: 160px;
+}
+
+div.nav-link {
+    font-size: 150%;
+    /*padding: 15px 15px 15px 15px;*/
+}
+
+div.nav-link :hover {
+    background: #333333;
+}
+
+div.selected-nav-link {
+    background: #333333;
+}
+
+div.nav-link a {
+    padding: 10px 10px 10px 10px;
+    color: #0078A0;
+    text-decoration: None;
+    display: block;
+}
+
+div.nav-break {
+    border-bottom: 2px solid #999999;
+}
+
+
+.title-bar {
+    background: none repeat scroll 0% 0% #222222;
+    color: #DDD;
+    padding: 0.2rem;
+    border-bottom: 1px solid #CCC;
+}
+
