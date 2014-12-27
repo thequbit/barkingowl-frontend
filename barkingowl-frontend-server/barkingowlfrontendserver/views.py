@@ -37,8 +37,48 @@ def str2bool(text):
         b = True
     return b
 
-@view_config(route_name='/', renderer='templates/index.mak')
+@view_config(route_name='/', renderer='templates/home.mak')
 def web_index(request):
+
+    return {}
+
+@view_config(route_name='/home', renderer='templates/home.mak')
+def web_home(request):
+
+    return {}
+
+@view_config(route_name='/target-urls', renderer='templates/target-urls.mak')
+def web_tager_urls(request):
+
+    return {}
+
+@view_config(route_name='/scraper-jobs', renderer='templates/scraper-jobs.mak')
+def web_scraper_jobs(request):
+
+    return {}
+
+@view_config(route_name='/scrapers', renderer='templates/scrapers.mak')
+def web_scrapers(request):
+
+    return {}
+
+@view_config(route_name='/scraper-runs', renderer='templates/scraper-runs.mak')
+def web_scraper_runs(request):
+
+    return {}
+
+@view_config(route_name='/documents', renderer='templates/documents.mak')
+def web_documents(request):
+
+    return {}
+
+@view_config(route_name='/settings', renderer='templates/settings.mak')
+def web_settings(request):
+
+    return {}
+
+@view_config(route_name='/logout', renderer='templates/logout.mak')
+def web_logout(request):
 
     return {}
 
@@ -88,6 +128,10 @@ def web_create_target_url(request):
             url = request.POST['url']
         except:
             raise Exception('Invalid/Missing fields.')
+
+        # do some sanity checking
+        if owner_id == '' or title == '' or url == '':
+            raise Exception('Invalid input values.')
 
         target_url = TargetURLs.add_target_url(
             session = DBSession,

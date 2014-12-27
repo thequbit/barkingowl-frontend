@@ -18,6 +18,14 @@ def main(global_config, **settings):
     config.add_static_view('static', 'static', cache_max_age=3600)
 
     config.add_route('/', '/')
+    config.add_route('/home','/home')
+    config.add_route('/target-urls','/target-urls')
+    config.add_route('/scraper-jobs','/scraper-jobs')
+    config.add_route('/scrapers','/scrapers')
+    config.add_route('/scraper-runs','/scraper-runs')
+    config.add_route('/documents','/documents')
+    config.add_route('/settings','/settings')
+    config.add_route('/logout','/logout')
 
     config.add_route('/create_user.json', 'create_user.json')
 
