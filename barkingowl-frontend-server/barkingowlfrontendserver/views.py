@@ -219,6 +219,34 @@ def web_add_document_type(request):
 
     return make_response(result)
 
+@view_config(route_name='/get_document_types.json')
+def web_get_document_types(request):
+
+    result = {'success': False}
+    try:
+    
+        _document_types = DocumentTypes.get_all_types(
+            session = DBSession,
+        )
+
+        document_types = []
+        for dt_id, dt_name, dt_description, dt_doc_type in _document_types:
+            document_types.append({
+                'id': dt_id,
+                'name': dt_name,
+                'description': dt_description,
+                'doc_type': dt_doc_type,
+            })
+
+        result['document_types'] = document_types
+
+        result['success'] = True
+    
+    except:
+        pass
+
+    return make_response(result)
+
 @view_config(route_name='/create_scraper_job.json')
 def web_create_scraper_job(request):
 
@@ -290,7 +318,7 @@ def web_get_scraper_jobs(request):
                 'target_url_id': s_target_url_id,
                 'name': s_name,
                 'notes': s_notes,
-                #'frequency': s_frequency,
+                'frequency': s_frequency,
                 'link_level': s_link_level,
                 'document_type_id': s_document_type_id,
                 'enabled': s_enabled,

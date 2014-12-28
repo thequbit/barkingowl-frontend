@@ -20,24 +20,18 @@
                        <label class="status" id="submit-status"></label>
                </div>
            </div>
-           <div class="second-column">
-               <h2>Existing Target URLs</h2>
-               <div class="indent">
-                   <div style="height: 26px"></div>
-                   <div id="target-urls-select"></div>
-                   <!--
-                   <select class="wide tall" multiple>
-                       <option>TimDuffy.Me</option>
-                       <option>Village of Scottsville, NY</option>
-                   </select>
-                   -->
+           <h2>Existing Target URLs</h2>
+           <div style="float: left;">
+               <div style="float: left;">
+                   <div class="indent">
+                       <div style="height: 26px"></div>
+                       <div id="target-urls-select"></div>
+                   </div>
                </div>
-           </div>
-           <div class="third-column" id="target-url-current" style="display: None;">
-               <!--<h2>Selected Target URL</h2>-->
-               <div style="height: 65px;"></div>
-               <div class="indent">
-                   <div id="target-url-info"></div>
+               <div style="float: left;" id="target-url-current" style="display: None;">
+                   <div class="indent">
+                       <div id="target-url-info"></div>
+                   </div>
                </div>
            </div>
        </div>

@@ -33,6 +33,7 @@ def main(global_config, **settings):
     config.add_route('/get_target_urls.json','/get_target_urls.json')
 
     config.add_route('/add_document_type.json', '/add_document_type.json')
+    config.add_route('/get_document_types.json', '/get_document_types.json')
 
     config.add_route('/create_scraper_job.json', '/create_scraper_job.json')
     config.add_route('/get_scraper_jobs.json', '/get_scraper_jobs.json')

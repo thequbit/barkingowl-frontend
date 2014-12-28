@@ -77,6 +77,10 @@ textarea.short {
     height: 140px;
 } 
 
+textarea.very-short {
+    height: 50px;
+}
+
 label {
     font-size: 110%;
     margin-bottom: 5px;
@@ -84,7 +88,7 @@ label {
 
 label.medium {
     display: block;
-    width: 100px;
+    width: 200px;
 }
 
 label.status {
