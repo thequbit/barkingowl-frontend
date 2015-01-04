@@ -48,3 +48,11 @@ def main(argv=sys.argv):
     #with transaction.manager:
     #    model = MyModel(name='one', value=1)
     #    DBSession.add(model)
+
+    DocumentTypes.add_new(
+        session = DBSession,
+        name = 'PDF Document',
+        description = 'Adobe PDF Document',
+        doc_type = 'application/pdf',
+    )
+

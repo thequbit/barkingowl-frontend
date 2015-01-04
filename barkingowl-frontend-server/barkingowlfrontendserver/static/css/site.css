@@ -1,12 +1,15 @@
 
-/*
- *
- *    Foundation Overrides
- *
- */
+body {
+    padding: 0px;
+    margin: 0px;
+    position: relative;
+    height: 100%;
+    font-family: "Lato",sans-serif !important;
+    color: #BBBBBB;
+}
 
-.row {
-	max-width: none !important;
+html {
+    height: 100%;
 }
 
 /*
@@ -16,9 +19,196 @@
  */
 
 .site-wrapper {
-	/*background: #D7D7D7;*/
+    /*margin-top: 10px;*/
+    /*background: #D7D7D7;*/
 }
 
-.site-contents {
+/*
+ *
+ * Formaters
+ *
+ */
 
+div.indent {
+    padding-left: 25px;
 }
+
+div.second-column {
+    float: left;
+    padding-left: 15px;
+}
+
+div.third-column {
+    float: left;
+    padding-left: 15px;
+}
+
+input {
+    background: #BBBBBB;
+    border: None;
+    padding: 8px 8px 8px 8px;
+    font-size: 110%;
+    border-radius: 3px;
+    margin-bottom: 5px;
+}
+
+input.wide {
+    width: 450px;
+}
+
+textarea {
+    background: #BBBBBB;
+    border: None;
+    padding: 8px 8px 8px 8px;
+    font-size: 110%;
+    border-radius: 3px;
+    margin-bottom: 5px;
+}
+
+textarea.wide {
+    width: 450px;
+}
+
+textarea.tall {
+    height: 200px;
+}
+
+textarea.short {
+    height: 140px;
+} 
+
+textarea.very-short {
+    height: 50px;
+}
+
+label {
+    font-size: 110%;
+    margin-bottom: 5px;
+}
+
+label.medium {
+    display: block;
+    width: 200px;
+}
+
+label.status {
+    display: none;
+}
+
+select {
+    background: #BBBBBB;
+    border: None;
+    padding: 8px 8px 8px 8px;
+    font-size: 110%;
+    border-radius: 3px;
+    margin-bottom: 5px;
+}
+
+select.wide {
+    width: 450px;
+}
+
+select.tall {
+    height: 410px;
+}
+
+option {
+    padding: 2px;
+}
+
+option :selected {
+    background-color: red;
+}
+
+
+a.button {
+    display: inline-block;
+    color: black;
+    display: block;
+    background: #BBBBBB;
+    border: None;
+    padding: 8px 8px 8px 8px;
+    font-size: 110%;
+    border-radius: 3px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    text-decoration: None;
+    text-align: center;
+}
+
+a.button:hover {
+    background: #999999;
+}
+
+/*
+ *
+ * Pages
+ *
+ */
+
+div.page-wrapper {
+    border-left: 2px solid #999999;
+    overflow: hidden;
+    display: block;
+    height: 100%;
+    background-color: #222222;
+}
+
+div.page-title {
+    padding-top: 50px;
+    padding-left: 25px;
+    
+}
+
+div.page-contents {
+    padding-left: 25px;
+    padding-top: 25px;
+}
+
+/*
+ *
+ * Nav pannel
+ *
+ */
+
+div.nav-wrapper {
+    float: left;
+    width: 220px;
+    height: 100%;
+    background: #222222;
+}
+
+div.nav-info {
+    padding-top: 20px;
+    text-align: center;
+    font-size: 200%;
+    height: 160px;
+}
+
+div.nav-link {
+    font-size: 150%;
+    /*padding: 15px 15px 15px 15px;*/
+}
+
+div.nav-link :hover {
+    background: #333333;
+}
+
+div.nav-link-selected {
+    background: #333333;
+}
+
+div.nav-link a {
+    padding: 10px 10px 10px 10px;
+    color: #0078A0;
+    text-decoration: None;
+    display: block;
+}
+
+div.nav-break {
+    border-bottom: 2px solid #999999;
+}
+
+
+

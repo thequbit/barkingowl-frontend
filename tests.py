@@ -1,4 +1,5 @@
 
+import time
 import uuid
 import json
 import requests
@@ -206,6 +207,10 @@ def run_tests():
     log('----')
     log('')
     log('')
+
+    log("Waiting 10 seconds to allow for scraper job to finish ...")
+
+    time.sleep(10)
 
     success, payload = _execute_test(
         'get_documents.json',

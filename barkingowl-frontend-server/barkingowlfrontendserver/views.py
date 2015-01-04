@@ -37,8 +37,48 @@ def str2bool(text):
         b = True
     return b
 
-@view_config(route_name='/', renderer='templates/index.mak')
+@view_config(route_name='/', renderer='templates/home.mak')
 def web_index(request):
+
+    return {}
+
+@view_config(route_name='/home', renderer='templates/home.mak')
+def web_home(request):
+
+    return {}
+
+@view_config(route_name='/target-urls', renderer='templates/target-urls.mak')
+def web_tager_urls(request):
+
+    return {}
+
+@view_config(route_name='/scraper-jobs', renderer='templates/scraper-jobs.mak')
+def web_scraper_jobs(request):
+
+    return {}
+
+@view_config(route_name='/scrapers', renderer='templates/scrapers.mak')
+def web_scrapers(request):
+
+    return {}
+
+@view_config(route_name='/scraper-runs', renderer='templates/scraper-runs.mak')
+def web_scraper_runs(request):
+
+    return {}
+
+@view_config(route_name='/documents', renderer='templates/documents.mak')
+def web_documents(request):
+
+    return {}
+
+@view_config(route_name='/settings', renderer='templates/settings.mak')
+def web_settings(request):
+
+    return {}
+
+@view_config(route_name='/logout', renderer='templates/logout.mak')
+def web_logout(request):
 
     return {}
 
@@ -88,6 +128,10 @@ def web_create_target_url(request):
             url = request.POST['url']
         except:
             raise Exception('Invalid/Missing fields.')
+
+        # do some sanity checking
+        if owner_id == '' or title == '' or url == '':
+            raise Exception('Invalid input values.')
 
         target_url = TargetURLs.add_target_url(
             session = DBSession,
@@ -175,6 +219,34 @@ def web_add_document_type(request):
 
     return make_response(result)
 
+@view_config(route_name='/get_document_types.json')
+def web_get_document_types(request):
+
+    result = {'success': False}
+    try:
+    
+        _document_types = DocumentTypes.get_all_types(
+            session = DBSession,
+        )
+
+        document_types = []
+        for dt_id, dt_name, dt_description, dt_doc_type in _document_types:
+            document_types.append({
+                'id': dt_id,
+                'name': dt_name,
+                'description': dt_description,
+                'doc_type': dt_doc_type,
+            })
+
+        result['document_types'] = document_types
+
+        result['success'] = True
+    
+    except:
+        pass
+
+    return make_response(result)
+
 @view_config(route_name='/create_scraper_job.json')
 def web_create_scraper_job(request):
 
@@ -246,7 +318,7 @@ def web_get_scraper_jobs(request):
                 'target_url_id': s_target_url_id,
                 'name': s_name,
                 'notes': s_notes,
-                #'frequency': s_frequency,
+                'frequency': s_frequency,
                 'link_level': s_link_level,
                 'document_type_id': s_document_type_id,
                 'enabled': s_enabled,
@@ -360,8 +432,14 @@ def web_get_scraper_job(request):
                 t_description, t_url, t_disabled, d_name, d_description, \
                 d_doc_type = _job
 
+            scraper_run = ScraperRuns.create_run(
+                session = DBSession,
+                scraper_id = scraper.id,
+                scraper_job_id = s_id,
+            )
+
             job = {
-                'id': s_id,
+                'scraper_job_id': s_id,
                 'author_id': s_author_id,
                 'target_url_id': s_target_url_id,
                 'name': s_name,
@@ -383,15 +461,16 @@ def web_get_scraper_job(request):
                     'description': d_description,
                     'doc_type': d_doc_type,
                 },
+                'scraper_run_id': scraper_run.id,
             }
 
-            scraper_run = ScraperRuns.create_run(
-                session = DBSession,
-                scraper_id = scraper.id,
-                scraper_job_id = s_id,
-            )
+            #scraper_run = ScraperRuns.create_run(
+            #    session = DBSession,
+            #    scraper_id = scraper.id,
+            #    scraper_job_id = s_id,
+            #)
 
-            scraper_run_id = scraper_run.id
+            #scraper_run_id = scraper_run.id
 
             status = ScraperStatuses.add_scraper_status(
                 session = DBSession,
@@ -404,7 +483,7 @@ def web_get_scraper_job(request):
 
         result['job'] = job
 
-        result['scraper_run_id'] = scraper_run_id
+        #result['scraper_run_id'] = scraper_run_id
 
         result['status_id'] = status_id
 
@@ -447,7 +526,7 @@ def web_add_document(request):
             unique = unique,
         )
 
-        if _scraper != None:
+        if _scraper == None:
             raise Exception('Unregistered scraper.')
 
         document = Documents.add_document(
@@ -458,7 +537,7 @@ def web_add_document(request):
             label = '',
             description = '',
             url = url,
-            unqiue_name = '',
+            unique_name = '',
             filename = '',
             link_text = link_text,
             page_url = '',
@@ -466,6 +545,10 @@ def web_add_document(request):
             size = -1,
             download_datetime = None,
         ) 
+
+        print "\n\n"
+        print document
+        print "\n\n"
 
         result['document_id'] = document.id
 

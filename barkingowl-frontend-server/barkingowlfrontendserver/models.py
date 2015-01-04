@@ -206,7 +206,10 @@ class DocumentTypes(Base):
     def get_all_types(cls, session):
         with transaction.manager:
             document_types = session.query(
-                DocumentTypes,
+                DocumentTypes.id,
+                DocumentTypes.name,
+                DocumentTypes.description,
+                DocumentTypes.doc_type,
             ).all()
         return document_types
 
@@ -566,7 +569,7 @@ class Documents(Base):
                 scraper_run_id = scraper_run_id,
                 scraper_job_id = scraper_job_id,
                 label = label,
-                description = descritpion,
+                description = description,
                 url = url,
                 unique_name = unique_name,
                 filename = filename,
