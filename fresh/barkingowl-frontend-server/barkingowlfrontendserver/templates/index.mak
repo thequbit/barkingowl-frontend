@@ -12,8 +12,8 @@
    
     <link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'> 
     
-    <link rel="stylesheet" href="foundation/css/foundation.css" />
-    <link rel="stylesheet" href="foundation/css/foundation-datepicker.css" />
+    <link rel="stylesheet" href="static/foundation/css/foundation.css" />
+    <link rel="stylesheet" href="static/foundation/css/foundation-datepicker.css" />
     
     <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
     
@@ -67,7 +67,7 @@
         </div>
     </div>
     
-    <script src="foundation/js/vendor/jquery.js"></script>
+    <script src="static/foundation/js/vendor/jquery.js"></script>
    
     <div class="input-bar">
         <div class="row">
@@ -98,13 +98,13 @@
         </div>
     </div>
     
-    <script src="foundation/js/foundation/foundation.js"></script>
+    <script src="static/foundation/js/foundation/foundation.js"></script>
     
-    <script src="foundation/js/foundation/foundation.dropdown.js"></script>
+    <script src="static/foundation/js/foundation/foundation.dropdown.js"></script>
 
-    <script src="foundation/js/vendor/modernizr.js"></script>
+    <script src="static/foundation/js/vendor/modernizr.js"></script>
 
-    <script src="foundation/js/foundation-datepicker.js"></script>
+    <script src="static/foundation/js/foundation-datepicker.js"></script>
 
     <script>
         $(document).foundation({
